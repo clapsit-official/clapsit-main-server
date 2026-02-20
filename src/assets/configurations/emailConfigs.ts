@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
 
 export type EmailsCanBe = 'noreply' | 'info' | 'support' | 'hr' | 'admin' | 'billing';
 
