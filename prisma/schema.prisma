@@ -83,3 +83,10 @@ model AIConversationHistory {
 
   @@index([conversation_key], map: "conversation_key")
 }
+
+model AIJSONGenerator {
+  id               Int      @id @default(autoincrement())
+  conversation_key String   @db.VarChar(255)
+  payload          Json
+  created_at       DateTime @default(now()) @db.DateTime(0)
+}

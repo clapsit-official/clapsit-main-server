@@ -1,4 +1,5 @@
-import { IsBoolean, IsNotEmpty, IsNumberString, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class StartConversationDto {
     @IsString()
@@ -27,14 +28,30 @@ export class TranslateDto {
     lang: string;
 }
 
+export class SaveHistoryFields {
+    @IsBoolean()
+    @IsNotEmpty()
+    save: boolean;
+}
+
 export class SaveHistoryDto {
+    @IsObject()
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => SaveHistoryFields)
+    data: SaveHistoryFields;
+}
+
+export class SaveKeyFields {
     @IsBoolean()
     @IsNotEmpty()
     save: boolean;
 }
 
 export class SaveKeyDto {
-    @IsBoolean()
+    @IsObject()
     @IsNotEmpty()
-    save: boolean;
+    @ValidateNested()
+    @Type(() => SaveKeyFields)
+    data: SaveKeyFields;
 }

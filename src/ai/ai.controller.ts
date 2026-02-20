@@ -42,7 +42,7 @@ export class AiController {
     @Patch('user_keys/:key_id')
     saveKeyById(@Param('key_id') keyId: number, @Body() body: SaveKeyDto, @Req() req: Request) {
         const userId = (req as any).user.id;
-        return this.aiService.saveKeyById(userId, Number(keyId), body.save);
+        return this.aiService.saveKeyById(userId, Number(keyId), body.data.save);
     }
 
     @Delete('user_keys/:key_id')
@@ -60,7 +60,7 @@ export class AiController {
     @Patch('key_history/:conversation_id')
     saveHistoryByConversationId(@Param('conversation_id') convId: number, @Body() body: SaveHistoryDto, @Req() req: Request) {
         const userId = (req as any).user.id;
-        return this.aiService.saveHistoryByConversationId(userId, Number(convId), body.save);
+        return this.aiService.saveHistoryByConversationId(userId, Number(convId), body.data.save);
     }
 
     @Delete('key_history/:conversation_id')
@@ -78,5 +78,15 @@ export class AiController {
     ) {
         const userId = (req as any).user.id;
         return this.aiService.askQuestion(userId, convKey, keyName, body);
+    }
+
+    @Get('json_generator/:c_id')
+    getJsonGeneratorById(@Param('c_id') cId: number) {
+        return this.aiService.getJsonGeneratorById(Number(cId));
+    }
+
+    @Post('json_generator/:cKey')
+    createJsonGenerator(@Param('cKey') cKey: string, @Body() body: any) {
+        return this.aiService.createJsonGenerator(cKey, body.data);
     }
 }
