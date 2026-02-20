@@ -45,7 +45,7 @@ export class UsersService {
 
     async signup(payload: SignupDto) {
         const emailExist = await this.prisma.users.findUnique({
-            where: { email: payload.data.email },
+            where: { email: payload.email },
         });
 
         if (emailExist) {
@@ -53,21 +53,21 @@ export class UsersService {
         }
 
         const hashPassword = await bcrypt.hash(
-            payload.data.password,
+            payload.password,
             Number(process.env.HASH_LIMIT) || 10,
         );
 
         try {
             const user = await this.prisma.users.create({
                 data: {
-                    fullname: payload.data.fullname,
-                    email: payload.data.email,
+                    fullname: payload.fullname,
+                    email: payload.email,
                     password: hashPassword,
                     register_date: moment().format('DD.MM.YYYY:HH:mm:ss'),
                     UserDetails: {
                         create: {
                             email_registered: false,
-                            preferred_lang: payload.data.preferred_lang || 'en',
+                            preferred_lang: payload.preferred_lang || 'en',
                         },
                     },
                 },
@@ -99,14 +99,14 @@ export class UsersService {
 
     async login(payload: LoginDto) {
         const user = await this.prisma.users.findUnique({
-            where: { email: payload.data.email },
+            where: { email: payload.email },
         });
 
         if (!user || !user.id) {
             throw new UnauthorizedException('EMAIL_OR_PASSWORD_INCORRECT');
         }
 
-        const isMatch = await bcrypt.compare(payload.data.password, user.password);
+        const isMatch = await bcrypt.compare(payload.password, user.password);
         if (!isMatch) {
             throw new UnauthorizedException('EMAIL_OR_PASSWORD_INCORRECT');
         }
@@ -132,7 +132,7 @@ export class UsersService {
 
     async forgotPassword(payload: ForgotPasswordDto) {
         const user = await this.prisma.users.findUnique({
-            where: { email: payload.data.email },
+            where: { email: payload.email },
             include: { UserDetails: true },
         });
 
@@ -153,7 +153,7 @@ export class UsersService {
                 reset_link: resetLink,
                 reset_link_life_hour: tokenLifeHours.reset_password,
             });
-            this.logger.log(`🔑 Reset password request for email -> ${payload.data.email}`);
+            this.logger.log(`🔑 Reset password request for email -> ${payload.email}`);
         } catch (error) {
             this.logger.error(`Error sending forgot password email: ${error}`);
         }
@@ -162,7 +162,7 @@ export class UsersService {
     }
 
     async resetPassword(payload: ResetPasswordDto, ip: string = '', userAgent: any = {}) {
-        const result = await this.authService.verifySessionToken('reset_password', payload.data.token);
+        const result = await this.authService.verifySessionToken('reset_password', payload.token);
         const sessionPayload: any = result.payload;
         const session = result.session;
 
@@ -174,7 +174,7 @@ export class UsersService {
             throw new NotFoundException('User cannot found at this moment');
         }
 
-        const hashPassword = await bcrypt.hash(payload.data.new_password, Number(process.env.HASH_LIMIT) || 10);
+        const hashPassword = await bcrypt.hash(payload.new_password, Number(process.env.HASH_LIMIT) || 10);
 
         await this.prisma.users.update({
             where: { id: user.id },
