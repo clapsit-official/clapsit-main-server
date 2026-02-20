@@ -46,6 +46,7 @@
     "http-errors": "^2.0.1",
     "moment": "^2.30.1",
     "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^8.0.1",
     "openai": "^6.22.0",
     "passport": "^0.7.0",
@@ -54,7 +55,8 @@
     "pnpm": "^10.30.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -62,7 +64,6 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
-    "@prisma/client": "^5.20.0",
     "@types/express": "^5.0.0",
     "@types/express-useragent": "^1.0.5",
     "@types/http-errors": "^2.0.5",
