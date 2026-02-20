@@ -12,5 +12,8 @@ RUN pnpm install --force
 
 COPY . .
 
+# Generate Prisma client
+RUN pnpm run prisma:generate
+
 # Build dist folder
 RUN pnpm run build
