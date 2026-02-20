@@ -3,7 +3,7 @@ services:
   nest:
     restart: always
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-5001}:${PORT:-5001}"
     build:
       context: . 
       dockerfile: Dockerfile
