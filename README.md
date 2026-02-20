@@ -1,91 +1,168 @@
-# Express App - Version 3.0.0
+# clapsit-main-server-refactor (NestJS)
 
-Welcome to the **Express App** developed by **Vugar Safarzada**. This modern, dynamic Express.js application is designed to provide a robust and scalable foundation for web development projects.
+Welcome to the **Clapsit Main Server (Refactored)** developed by **Vugar Safarzada**. This application has been entirely rewritten from an original Express.js application into a modern, robust, structurally strict **NestJS** application. 
+
+It provides the primary backend logic, data management via Prisma, and handles third-party integrations (such as SMTP and OpenAI).
 
 ## Table of Contents
 
+- [Features](#features)
 - [Installation](#installation)
-- [Scripts](#scripts)
 - [Project Structure](#project-structure)
 - [Database Management](#database-management)
+- [Docker Setup](#docker-setup)
+- [API Documentation Overview](#api-documentation-overview)
 - [Environment Variables](#environment-variables)
-- [License](#license)
+- [Scripts](#scripts)
+
+---
+
+## Features
+
+- **NestJS Framework:** Utilizing decorators, Dependency Injection, Guards, and Pipes.
+- **Prisma ORM:** Database management with strictly typed schema models.
+- **Dockerized Environments:** Production, Development, and Build level Compose setups.
+- **Global Error Handling & Validation:** Pre-configured `ValidationPipe` and `ExceptionFilter`.
+- **Integrated Core Modules:** SMTP, CDN (Multer), Auth (JWT), User, and AI integrations perfectly decoupled.
+
+---
 
 ## Installation
 
-To get started with the project, clone the repository and install the dependencies:
+To get started with the project locally (without Docker), ensure you have Node.js and `pnpm` installed.
 
 ```bash
-git clone https://github.com/yourusername/express-app.git
-cd express-app
-npm install
+git clone <repository_url>
+cd clapsit-main-server-refactor
+pnpm install
 ```
 
-## Scripts
-
-The following scripts are available for managing and running the application:
-
-- `npm start`: Start the application using `ts-node`.
-- `npm run dev`: Start the application in development mode using `nodemon` and `ts-node`.
-- `npm run test`: Placeholder for the test script.
-- `npm run db:pull`: Pull the database schema using Prisma.
-- `npm run db:deploy`: Deploy the database migrations using Prisma.
-- `npm run db:migrate`: Run the Prisma migrations in development mode.
-- `npm run db:reset`: Reset the database using Prisma.
-- `db:seed`: Set seeds to database.
+---
 
 ## Project Structure
 
-The project structure is organized as follows:
+The NestJS project is highly modular. Core logical domains are split into standalone folders containing their respective Controllers, Services, and DTOs:
 
 ```
 .
-├── src
-│   ├── assets
-│   │   ├── helpers
-│   │   └── types
-│   ├── controllers
-│   ├── public
-│   ├── routes
-│   ├── bin
-│   │   └── www.ts
-│   └── app.ts
 ├── prisma
-│   ├── schema.prisma
-├── .env
-├── package.json
-└── README.md
+│   └── schema.prisma         # Database schema
+├── src
+│   ├── ai                    # AI Management Module (OpenAI Integration)
+│   ├── assets                # Core Helpers, Configs, Constants
+│   ├── auth                  # Access Token / Auth Validation Logic
+│   ├── cdn                   # Static File Management / Uploads
+│   ├── common                # Global Exceptions and Interceptors
+│   ├── health                # API Status and Database Checks
+│   ├── smtp                  # Nodemailer integrations
+│   ├── users                 # User Login, Signup, Profile logic
+│   ├── app.module.ts         # Root module configuration
+│   └── main.ts               # Bootstrapping (Morgan, CORS, Class-Validator)
+├── docker-compose.yml        # Base DB docker setup
+├── docker-compose.dev.yml    # Development Docker Setup
+├── docker-compose.build.yml  # Production Build Docker Setup
+└── Dockerfile                # Image building configuration
 ```
+
+---
 
 ## Database Management
 
-This project uses [Prisma](https://www.prisma.io/) for database management. The following commands help manage the database schema and migrations:
+This project uses [Prisma](https://www.prisma.io/). To sync your models and schema to a running MySQL instance:
 
-- `db:pull`: Synchronizes your Prisma schema with the database schema.
-- `db:deploy`: Applies all pending migrations to the database.
-- `db:migrate`: Creates a new migration based on the changes in your Prisma schema and applies it.
-- `db:reset`: Resets the database by rolling back and reapplying all migrations.
-- `db:seed`: Set seeds to database.
+- `pnpm run prisma:generate` - Generates the Prisma client.
+- `pnpm run prisma:push` - Pushes schema directly to DB without saving a migration file.
+- `pnpm run prisma:db:pull` - Fetches the schema from your active MySQL database.
 
-Ensure you have configured your database connection string in the `.env` file.
+Remember to execute `pnpm run prisma:generate` every time `schema.prisma` is manually modified.
+
+---
+
+## Docker Setup
+
+Docker is configured to match the previous generation's layout smoothly.
+
+**1. Start Development Mode via Docker:**
+This will spin up the MySQL Database alongside the NestJS development server, watching for live changes.
+```bash
+pnpm run dev:docker
+```
+*(Equivalent to: `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build`)*
+
+**2. Production Build Check:**
+Used to verify if the server bundles successfully inside an isolated docker environment.
+```bash
+pnpm run build:docker
+```
+*(Equivalent to: `docker-compose -f docker-compose.yml -f docker-compose.build.yml up --build`)*
+
+---
+
+## API Documentation Overview
+
+All primary routes are mapped cleanly inside their respective module controllers and prepended by the `api/` global prefix. 
+
+### Health (`/api/health`)
+- `GET /` - Checks DB connectivity and backend uptime.
+
+### Auth & Users (`/api/users`)
+- `POST /signup` - Registers a new user.
+- `POST /login` - Returns JWT Session tokens.
+- `POST /forgot_password` - Sends reset password email.
+- `POST /reset_password` - Confirms and sets a new password.
+
+### CDN (`/api/cdn`)
+- `POST /upload` - Simulates a file upload entry.
+- `GET /:id` - Fetches and returns an asset stream.
+- `DELETE /delete/:id` - Deletes file entry from DB.
+
+### SMTP (`/api/smtp_server_app`)
+- `GET /test/:userId` - Sends test confirmation/reset mails internally for debugging.
+
+### AI Management (`/api/ai_management`) - *Requires Bearer Token*
+- `GET /start` - Initiates a new conversation instance with specific Persona keys.
+- `POST /ask` - Prompting logic via DeepSeek, ChatGPT, or Grok.
+
+*(Detailed parameter queries and response typings are globally restricted via Class Validator inside DTOs)*
+
+---
 
 ## Environment Variables
 
-Create a `.env` file in the root directory of your project and configure the necessary environment variables. For example:
+An `.env` is required for the application to function. A base template:
 
+```env
+PORT=3333
+DATABASE_URL="mysql://root:password@database:3306/clapsit_development?schema=public"
+
+# Token Variables
+ACCESS_TOKEN_SECRET="your_secret_string"
+REFRESH_TOKEN_SECRET="your_secret_string"
+HASH_LIMIT=10
+
+# AI Configuration
+GROK_API_KEY=""
+GROK_BASE_URL=""
+DEEPSEEK_API_KEY=""
+DEEPSEEK_BASE_URL=""
+CHATGPT_API_KEY=""
+
+# SMTP Setup
+SERVICE_EMAIL_SERVICE="gmail"
+SERVICE_EMAIL_USER="your-email@gmail.com"
+SERVICE_EMAIL_PASSWORD="app-password"
+APP_BRAND_DOMAIN="CLAPSIT"
+APP_BRAND_NAME="Clapsit Server"
+ACCEPTABLE_CORS_ORIGIN="*"
 ```
-DATABASE_URL="mysql://user:password@localhost:3306/mydatabase"
-JWT_SECRET="your_jwt_secret"
-```
-## New Skills On The Version V3:
-- Writing clean code with an Object-Oriented Programming structure using TypeScript
-- Utilizing Prisma as a new ORM for database management
-- Implementing dynamic debugging and logging (enhanced with a Telegram bot)
-- Developing a security system for API services
-
-## License
-
-This project is licensed under the ISC License. See the [LICENSE](LICENSE) file for more information.
 
 ---
-By Vugar Safarzada
+
+## Scripts
+
+Key generic `package.json` configurations:
+
+- `pnpm run build`: Compile TypeScript into `./dist`.
+- `pnpm run start`: Boot production build from `./dist/main`.
+- `pnpm run start:dev`: Boot in watch mode using TS-Node.
+- `pnpm run lint`: Formats via internal ESLint configs.

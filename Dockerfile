@@ -1,5 +1,5 @@
 FROM node:22
-WORKDIR /clapsit/clapsit-main-server
+WORKDIR /clapsit/clapsit-main-server-refactor
 
 # Activate pnpm using
 RUN corepack enable && corepack prepare pnpm@10.3.0 --activate
