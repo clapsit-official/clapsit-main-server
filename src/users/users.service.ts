@@ -19,7 +19,7 @@ export class UsersService {
     async auth(req: any) {
         const userPayload = req.user; // Populated by AuthGuard
         const user = await this.prisma.users.findUnique({
-            where: { id: userPayload.user_id },
+            where: { id: userPayload.id },
             include: { UserDetails: true },
         });
 
@@ -67,7 +67,7 @@ export class UsersService {
                     UserDetails: {
                         create: {
                             email_registered: false,
-                            preferred_lang: payload.preferred_lang || 'en',
+                            preferred_lang: payload.preferred_lang || 'en-US',
                         },
                     },
                 },
