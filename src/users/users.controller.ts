@@ -52,7 +52,7 @@ export class UsersController {
 
     @UseGuards(AuthGuard)
     @Patch('preferred_lang')
-    setPreferredLang(@Query('user_id') userId: string, @Body() body: { data: { lang: string } }) {
-        return this.usersService.setPreferredLang(Number(userId), body.data.lang);
+    setPreferredLang(@Query('user_id') userId: string, @Body() body: { lang: string }) {
+        return this.usersService.setPreferredLang(Number(userId), body.lang);
     }
 }

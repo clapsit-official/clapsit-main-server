@@ -1,5 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class StartConversationDto {
     @IsString()
@@ -9,7 +8,7 @@ export class StartConversationDto {
 
 export class AskQuestionDto {
     @IsNotEmpty()
-    data: any; // e.g., { value: 'What is NestJS?' }
+    value: any;
 }
 
 export class GenerateJsonDto {
@@ -28,30 +27,14 @@ export class TranslateDto {
     lang: string;
 }
 
-export class SaveHistoryFields {
-    @IsBoolean()
-    @IsNotEmpty()
-    save: boolean;
-}
-
 export class SaveHistoryDto {
-    @IsObject()
-    @IsNotEmpty()
-    @ValidateNested()
-    @Type(() => SaveHistoryFields)
-    data: SaveHistoryFields;
-}
-
-export class SaveKeyFields {
     @IsBoolean()
     @IsNotEmpty()
     save: boolean;
 }
 
 export class SaveKeyDto {
-    @IsObject()
+    @IsBoolean()
     @IsNotEmpty()
-    @ValidateNested()
-    @Type(() => SaveKeyFields)
-    data: SaveKeyFields;
+    save: boolean;
 }

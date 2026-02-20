@@ -265,7 +265,7 @@ export class AiService {
             throw new UnprocessableEntityException('MODEL_IS_UNSUPPORTED');
         }
 
-        const questionStr = JSON.stringify(data.value);
+        const questionStr = typeof data === 'string' ? data : JSON.stringify(data);
         if (!questionStr) {
             throw new UnprocessableEntityException('VALUE_REQUIRED');
         }
