@@ -6,7 +6,4 @@ services:
       - "3333:3333"
     depends_on:
       - mysql
-    volumes:
-      - .:/clapsit/clapsit-main-server-refactor
-      - /clapsit/clapsit-main-server-refactor/node_modules
     command: sh -c "pnpm run db:generate && pnpm run db:deploy && pnpm run start:prod"
