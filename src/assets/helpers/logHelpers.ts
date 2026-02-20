@@ -1,8 +1,8 @@
-import { ASCII_logo, currentLogFilePath, logsBasePath } from "#assets/constants/general";
-import moment from "moment/moment";
-import { isResponseSuccessful, readFromFile, writeToFile } from "#helpers/generalHelpers";
-import { PathLike, existsSync, writeFile } from "node:fs";
-import { sendLogToTelegramBot } from "#helpers/TelegramBot";
+import { ASCII_logo, currentLogFilePath, logsBasePath } from "../constants/general";
+import moment from "moment";
+import { isResponseSuccessful, readFromFile, writeToFile } from "./generalHelpers";
+import fs from "fs";
+import { sendLogToTelegramBot } from "./TelegramBot";
 import dotenv from "dotenv";
 import { $writeToFileSafe } from "./methods";
 dotenv.config();
@@ -17,8 +17,8 @@ export const initLogs = () => {
 type loggedTrigger = 'node' | 'prisma' | 'morgan' | string;
 type loggedTriggerObjectType = {
     from: loggedTrigger,
-    file: string | PathLike | any,
-    url: string | PathLike | any,
+    file: string | fs.PathLike | any,
+    url: string | fs.PathLike | any,
     request: {
         path: string | any
         method: string | any
@@ -50,7 +50,7 @@ export function $logged(
 
     const log = `# [${typeIcon}][${type}][${logDate}] -> [${JSON.stringify(trigger)}${ip ? '(🏷️IP:' + ip + ')' : ''}] => [${action}]`;
     console.log(log);
-    if(sendToTgBot){
+    if (sendToTgBot) {
         let botMessage = `${typeIcon} <b>#${type}</b> [${logDate}]\n\n`;
         if (!process.env.DEVELOPER_MODE) {
             if (trigger.from) botMessage = botMessage + `📡 <b>From</b>: "${trigger.from}" \n`;
@@ -72,7 +72,7 @@ export function $logged(
         }
     }
 
-    let beforeLogs = readFromFile(currentLogFilePath);
+    let beforeLogs = readFromFile(currentLogFilePath) || "";
     const logs = beforeLogs + "\n" + log;
     writeToFile(logs, currentLogFilePath)
 }
