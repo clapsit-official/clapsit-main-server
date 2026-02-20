@@ -330,7 +330,7 @@ export class AiService {
 
     async getJsonGeneratorById(cId: number) {
         const result = await this.prisma.aIJSONGenerator.findMany({
-            where: { conversation_id: cId },
+            where: { conversation_key: String(cId) },
         });
         return { success: true, message: 'DONE', data: result };
     }
