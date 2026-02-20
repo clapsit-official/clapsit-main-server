@@ -11,8 +11,15 @@ type LangType = typeof available_email_langs[number] | string;
 export async function getEmailTemplate(template_name: string, values: any = {}, lang: LangType = default_email_lang) {
     values['logo_url'] = `https://www.${appDomain.toLowerCase()}/logo.png `
     let templateContent: any = '<strong> Null content </strong>';
+
+    // Normalize language codes
+    let targetLang = lang || default_email_lang;
+    if (targetLang === 'en') targetLang = 'en-US';
+    if (targetLang === 'az') targetLang = 'az-AZ';
+    if (targetLang === 'ru') targetLang = 'ru-RU';
+
     try {
-        const filePath = path.join(__dirname, `../../../views/email_templates/${lang || default_email_lang}/${template_name}.html`);
+        const filePath = path.join(__dirname, `../../../views/email_templates/${targetLang}/${template_name}.html`);
         templateContent = await fs.readFile(filePath, 'utf8');
     } catch (error) {
         console.error('Error reading the HTML file', error);
