@@ -36,7 +36,7 @@ jobs:
             git checkout main
             git pull
             rm -rf ./dist
-            pnpm run build:docker -- -d
+            docker-compose -f docker-compose.yml -f docker-compose.build.yml up --build -d
           EOF
       
       - name: Update deployment status to success

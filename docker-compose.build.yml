@@ -3,7 +3,7 @@ services:
   nest:
     container_name: clapsit-main-server-nest_build
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-5001}:${PORT:-5001}"
     depends_on:
       - mysql
     command: sh -c "pnpm run db:generate && pnpm run db:deploy && pnpm run start:prod"
