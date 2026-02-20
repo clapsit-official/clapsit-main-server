@@ -327,4 +327,21 @@ export class AiService {
 
         return { success: true, message: 'DONE', data: reversedHistory };
     }
+
+    async getJsonGeneratorById(cId: number) {
+        const result = await this.prisma.aIJSONGenerator.findMany({
+            where: { conversation_id: cId },
+        });
+        return { success: true, message: 'DONE', data: result };
+    }
+
+    async createJsonGenerator(cKey: string, data: any) {
+        const result = await this.prisma.aIJSONGenerator.create({
+            data: {
+                conversation_key: cKey,
+                payload: JSON.stringify(data),
+            },
+        });
+        return { success: true, message: 'DONE', data: result };
+    }
 }

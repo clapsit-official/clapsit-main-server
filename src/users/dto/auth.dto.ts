@@ -1,6 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsObject, IsString, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class SignupDto {
+export class SignupFields {
     @IsEmail({}, { message: 'INVALID_EMAIL' })
     @IsNotEmpty({ message: 'USER_REGISTRATION_FAILED' })
     email: string;
@@ -18,7 +19,15 @@ export class SignupDto {
     preferred_lang?: string;
 }
 
-export class LoginDto {
+export class SignupDto {
+    @IsObject()
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => SignupFields)
+    data: SignupFields;
+}
+
+export class LoginFields {
     @IsEmail({}, { message: 'INVALID_EMAIL' })
     @IsNotEmpty({ message: 'USER_LOGIN_PROGRESS_FAILED' })
     email: string;
@@ -28,13 +37,29 @@ export class LoginDto {
     password: string;
 }
 
-export class ForgotPasswordDto {
+export class LoginDto {
+    @IsObject()
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => LoginFields)
+    data: LoginFields;
+}
+
+export class ForgotPasswordFields {
     @IsEmail({}, { message: 'INVALID_EMAIL' })
     @IsNotEmpty({ message: 'SOMETHING_WENT_WRONG' })
     email: string;
 }
 
-export class ResetPasswordDto {
+export class ForgotPasswordDto {
+    @IsObject()
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => ForgotPasswordFields)
+    data: ForgotPasswordFields;
+}
+
+export class ResetPasswordFields {
     @IsString()
     @IsNotEmpty({ message: 'SOMETHING_WENT_WRONG' })
     token: string;
@@ -43,4 +68,12 @@ export class ResetPasswordDto {
     @IsNotEmpty({ message: 'SOMETHING_WENT_WRONG' })
     @MinLength(6, { message: 'INVALID_PASSWORD' })
     new_password: string;
+}
+
+export class ResetPasswordDto {
+    @IsObject()
+    @IsNotEmpty()
+    @ValidateNested()
+    @Type(() => ResetPasswordFields)
+    data: ResetPasswordFields;
 }

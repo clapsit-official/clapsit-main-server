@@ -16,9 +16,36 @@ export class UsersService {
         private smtpService: SmtpService,
     ) { }
 
+    async auth(req: any) {
+        const userPayload = req.user; // Populated by AuthGuard
+        const user = await this.prisma.users.findUnique({
+            where: { id: userPayload.user_id },
+            include: { UserDetails: true },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('INVALID_TOKEN');
+        }
+
+        const { password, ...userData } = user;
+        const { user_id, ...details } = user.UserDetails || {};
+
+        return {
+            success: true,
+            data: {
+                user_id: user.id,
+                details: {
+                    ...userData,
+                    ...details,
+                },
+            },
+            message: 'DONE',
+        };
+    }
+
     async signup(payload: SignupDto) {
         const emailExist = await this.prisma.users.findUnique({
-            where: { email: payload.email },
+            where: { email: payload.data.email },
         });
 
         if (emailExist) {
@@ -26,21 +53,21 @@ export class UsersService {
         }
 
         const hashPassword = await bcrypt.hash(
-            payload.password,
+            payload.data.password,
             Number(process.env.HASH_LIMIT) || 10,
         );
 
         try {
             const user = await this.prisma.users.create({
                 data: {
-                    fullname: payload.fullname,
-                    email: payload.email,
+                    fullname: payload.data.fullname,
+                    email: payload.data.email,
                     password: hashPassword,
                     register_date: moment().format('DD.MM.YYYY:HH:mm:ss'),
                     UserDetails: {
                         create: {
                             email_registered: false,
-                            preferred_lang: payload.preferred_lang || 'en',
+                            preferred_lang: payload.data.preferred_lang || 'en',
                         },
                     },
                 },
@@ -72,14 +99,14 @@ export class UsersService {
 
     async login(payload: LoginDto) {
         const user = await this.prisma.users.findUnique({
-            where: { email: payload.email },
+            where: { email: payload.data.email },
         });
 
         if (!user || !user.id) {
             throw new UnauthorizedException('EMAIL_OR_PASSWORD_INCORRECT');
         }
 
-        const isMatch = await bcrypt.compare(payload.password, user.password);
+        const isMatch = await bcrypt.compare(payload.data.password, user.password);
         if (!isMatch) {
             throw new UnauthorizedException('EMAIL_OR_PASSWORD_INCORRECT');
         }
@@ -105,7 +132,7 @@ export class UsersService {
 
     async forgotPassword(payload: ForgotPasswordDto) {
         const user = await this.prisma.users.findUnique({
-            where: { email: payload.email },
+            where: { email: payload.data.email },
             include: { UserDetails: true },
         });
 
@@ -126,7 +153,7 @@ export class UsersService {
                 reset_link: resetLink,
                 reset_link_life_hour: tokenLifeHours.reset_password,
             });
-            this.logger.log(`🔑 Reset password request for email -> ${payload.email}`);
+            this.logger.log(`🔑 Reset password request for email -> ${payload.data.email}`);
         } catch (error) {
             this.logger.error(`Error sending forgot password email: ${error}`);
         }
@@ -135,7 +162,7 @@ export class UsersService {
     }
 
     async resetPassword(payload: ResetPasswordDto, ip: string = '', userAgent: any = {}) {
-        const result = await this.authService.verifySessionToken('reset_password', payload.token);
+        const result = await this.authService.verifySessionToken('reset_password', payload.data.token);
         const sessionPayload: any = result.payload;
         const session = result.session;
 
@@ -147,7 +174,7 @@ export class UsersService {
             throw new NotFoundException('User cannot found at this moment');
         }
 
-        const hashPassword = await bcrypt.hash(payload.new_password, Number(process.env.HASH_LIMIT) || 10);
+        const hashPassword = await bcrypt.hash(payload.data.new_password, Number(process.env.HASH_LIMIT) || 10);
 
         await this.prisma.users.update({
             where: { id: user.id },
@@ -170,5 +197,50 @@ export class UsersService {
 
         await this.authService.killSession(session.id);
         return { success: true, message: 'PASSWORD_SUCCESSFULLY_CHANGED' };
+    }
+
+    async logout(req: any) {
+        if (req.sessionId) {
+            await this.authService.killSession(req.sessionId);
+        }
+        return { success: true };
+    }
+
+    async confirmEmail(token: string) {
+        const result = await this.authService.verifySessionToken('confirm_email', token);
+        const session = result.session;
+
+        await this.prisma.userDetails.update({
+            where: { user_id: session.owner_id },
+            data: { email_registered: true },
+        });
+
+        await this.authService.killSession(session.id);
+        return { success: true, message: 'EMAIL_SUCCESSFULLY_CONFIRMED' };
+    }
+
+    async checkResetPasswordToken(token: string) {
+        const result = await this.authService.verifySessionToken('reset_password', token);
+        const sessionPayload: any = result.payload;
+        const session = result.session;
+
+        const user = await this.prisma.users.findFirst({
+            where: { password: sessionPayload.key, id: session.owner_id },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('INVALID_TOKEN');
+        }
+
+        return { success: true, message: 'DONE' };
+    }
+
+    async setPreferredLang(userId: number, lang: string) {
+        await this.prisma.userDetails.update({
+            where: { user_id: userId },
+            data: { preferred_lang: lang },
+        });
+
+        return { success: true };
     }
 }
