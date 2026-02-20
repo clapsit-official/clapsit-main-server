@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto } from './dto/auth.dto';
 import type { Request } from 'express';
 
-@Controller('users')
+@Controller('user')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
